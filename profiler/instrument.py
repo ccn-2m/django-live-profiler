@@ -1,3 +1,4 @@
+import inspect
 from datetime import datetime
 
 from django.db.models.sql.compiler import SQLCompiler
@@ -27,7 +28,18 @@ def execute_sql(self, *args, **kwargs):
         return self.__execute_sql(*args, **kwargs)
     finally:
         d = (datetime.now() - start)
-        client.insert({'query': q, 'view': _get_current_view(), 'type': 'sql'},
+        # TODO: make this more generalized. good enough for what we need now.
+        # tries to find where the sql call was made from
+        location = next(
+            ('{line} #{num}'.format(line=f[1].replace('../eventsquare/', ''), num=f[2])
+             for f in inspect.stack() if 'eventsquare' in f[1]),
+            None
+        )
+
+        if location:
+            q = location + ' | ' + q
+
+        client.insert({'query': q, 'view': _get_current_view(), 'type': 'sql', 'location': location},
                       {'time': 0.0 + d.seconds * 1000 + d.microseconds/1000, 'count': 1})
 
 INSTRUMENTED = False
