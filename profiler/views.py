@@ -13,6 +13,7 @@ def global_stats(request):
     stats = get_client().select(group_by=['query'], where={'type': 'sql'})
     for s in stats:
         s['average_time'] = s['time'] / s['count']
+
     return render_to_response('profiler/index.html',
                               {'queries': stats},
                               context_instance=RequestContext(request))
