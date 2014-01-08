@@ -38,8 +38,9 @@ def stats_by_view(request):
     for r in stats:
         if r['average_time'] > maxtime:
             maxtime = r['average_time']
+
     for r in stats:
-        r['normtime'] = (0.0+r['average_time'])/maxtime
+        r['normtime'] = 0 if maxtime == 0 else (0.0 + r['average_time']) / maxtime
 
     return render_to_response('profiler/by_view.html',
                               {'queries': grouped,
